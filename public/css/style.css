@@ -175,12 +175,25 @@ h1, h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   margin-bottom: 12px;
   font-size: 0.95rem;
 }
 
 .opponent-name { font-weight: 600; }
 .turn-indicator { color: var(--accent-dark); font-weight: 600; }
+
+.turn-timer {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-weight: 600;
+  min-width: 2.5em;
+  text-align: right;
+}
+
+.turn-timer.is-low {
+  color: var(--disc-p1);
+}
 
 .board {
   display: grid;

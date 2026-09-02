@@ -21,7 +21,6 @@ const server = app.listen(PORT, () => {
 });
 
 const wss = new WebSocketServer({ server, path: '/ws' });
-const lobby = new Lobby();
 
 // connId -> WebSocket
 const sockets = new Map();
@@ -38,6 +37,8 @@ function dispatch(effects) {
     send(effect.connId, effect.message);
   }
 }
+
+const lobby = new Lobby(dispatch);
 
 function isValidGuestId(guestId) {
   return typeof guestId === 'string' && guestId.length > 0 && guestId.length <= MAX_GUEST_ID_LEN;
@@ -68,7 +69,7 @@ wss.on('connection', (ws) => {
         return;
       }
       registered = true;
-      dispatch(lobby.addClient(connId, data.guestId, data.name));
+      lobby.addClient(connId, data.guestId, data.name, data.visible !== false);
       return;
     }
 
@@ -76,22 +77,25 @@ wss.on('connection', (ws) => {
 
     switch (data.type) {
       case 'rename':
-        dispatch(lobby.renameClient(connId, data.name));
+        lobby.renameClient(connId, data.name);
+        break;
+      case 'visibility':
+        lobby.setVisibility(connId, !!data.visible);
         break;
       case 'challenge':
-        dispatch(lobby.challenge(connId, data.targetId));
+        lobby.challenge(connId, data.targetId);
         break;
       case 'challenge_random':
-        dispatch(lobby.challengeRandom(connId));
+        lobby.challengeRandom(connId);
         break;
       case 'move':
         if (typeof data.gameId === 'string' && Number.isInteger(data.col)) {
-          dispatch(lobby.makeMove(connId, data.gameId, data.col));
+          lobby.makeMove(connId, data.gameId, data.col);
         }
         break;
       case 'leave_game':
         if (typeof data.gameId === 'string') {
-          dispatch(lobby.leaveGame(connId, data.gameId));
+          lobby.leaveGame(connId, data.gameId);
         }
         break;
       default:
@@ -101,7 +105,7 @@ wss.on('connection', (ws) => {
 
   ws.on('close', () => {
     sockets.delete(connId);
-    dispatch(lobby.removeClient(connId));
+    lobby.removeClient(connId);
   });
 
   ws.on('error', () => {

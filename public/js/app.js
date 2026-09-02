@@ -5,6 +5,7 @@
   const GUEST_NAME_KEY = 'f4_guest_name';
   const ROWS = 6;
   const COLS = 7;
+  const LOW_TIME_THRESHOLD_MS = 10000;
 
   const els = {
     banner: document.getElementById('connection-banner'),
@@ -19,6 +20,7 @@
     board: document.getElementById('board'),
     gameOpponent: document.getElementById('game-opponent'),
     gameTurn: document.getElementById('game-turn'),
+    gameTimer: document.getElementById('game-timer'),
     btnLeaveGame: document.getElementById('btn-leave-game'),
     leaderboardBody: document.getElementById('leaderboard-body'),
     leaderboardEmpty: document.getElementById('leaderboard-empty'),
@@ -32,7 +34,8 @@
 
   let ws = null;
   let reconnectAttempts = 0;
-  let currentGame = null; // { gameId, yourColor, opponentName, turn }
+  let currentGame = null; // { gameId, yourColor, opponentName, turn, turnDeadline }
+  let countdownInterval = null;
 
   function getOrCreateGuestId() {
     let id = localStorage.getItem(GUEST_ID_KEY);
@@ -126,6 +129,34 @@
     els.board.classList.toggle('is-locked', !myTurn);
   }
 
+  function stopCountdown() {
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
+    els.gameTimer.textContent = '';
+    els.gameTimer.classList.remove('is-low');
+  }
+
+  function tickCountdown() {
+    if (!currentGame || !currentGame.turnDeadline) {
+      stopCountdown();
+      return;
+    }
+    const remainingMs = currentGame.turnDeadline - Date.now();
+    const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+    els.gameTimer.textContent = remainingSec + 's';
+    els.gameTimer.classList.toggle('is-low', remainingMs <= LOW_TIME_THRESHOLD_MS);
+  }
+
+  function startCountdown(deadline) {
+    stopCountdown();
+    if (!currentGame || !deadline) return;
+    currentGame.turnDeadline = deadline;
+    tickCountdown();
+    countdownInterval = setInterval(tickCountdown, 250);
+  }
+
   function openNameModal() {
     els.nameModal.hidden = false;
     els.nameInput.focus();
@@ -153,7 +184,7 @@
       els.leaderboardEmpty.hidden = rows.length > 0;
       rows.forEach((p, i) => {
         const tr = document.createElement('tr');
-        const cells = [String(i + 1), p.name, String(p.wins), String(p.losses), String(p.draws)];
+        const cells = [String(i + 1), p.name, String(p.points), String(p.wins), String(p.draws), String(p.losses)];
         for (const text of cells) {
           const td = document.createElement('td');
           td.textContent = text;
@@ -172,17 +203,22 @@
     }
   }
 
+  function sendVisibility() {
+    sendMessage({ type: 'visibility', visible: document.visibilityState === 'visible' });
+  }
+
   function handleServerMessage(data) {
     switch (data.type) {
       case 'lobby':
         renderLobby(data.players || []);
         break;
       case 'game_start':
-        currentGame = { gameId: data.gameId, yourColor: data.yourColor, opponentName: data.opponent.name, turn: data.turn };
+        currentGame = { gameId: data.gameId, yourColor: data.yourColor, opponentName: data.opponent.name, turn: data.turn, turnDeadline: null };
         els.gameOpponent.textContent = 'vs ' + data.opponent.name;
         buildBoard();
         renderBoard(data.board);
         updateTurnIndicator();
+        startCountdown(data.turnDeadline);
         setView('game');
         break;
       case 'game_update':
@@ -191,14 +227,19 @@
         renderBoard(data.board);
         updateTurnIndicator();
         if (data.finished) {
+          stopCountdown();
           const messages = {
             win: 'Hai vinto! 🎉',
             loss: 'Hai perso.',
             draw: 'Pareggio!',
             forfeit_win: "L'avversario ha abbandonato: hai vinto!",
+            timeout_win: "L'avversario non ha giocato in tempo: hai vinto!",
+            timeout_loss: 'Tempo scaduto: hai perso la partita.',
           };
           showResult(messages[data.result] || 'Partita conclusa.');
           currentGame = null;
+        } else {
+          startCountdown(data.turnDeadline);
         }
         break;
       case 'error':
@@ -219,7 +260,7 @@
       showBanner(null);
       const guestId = getOrCreateGuestId();
       const name = localStorage.getItem(GUEST_NAME_KEY);
-      sendMessage({ type: 'hello', guestId, name });
+      sendMessage({ type: 'hello', guestId, name, visible: document.visibilityState === 'visible' });
     });
 
     ws.addEventListener('message', (event) => {
@@ -232,6 +273,7 @@
 
     ws.addEventListener('close', () => {
       currentGame = null;
+      stopCountdown();
       showBanner('Connessione persa, riconnessione in corso...');
       const delay = Math.min(1000 * 2 ** reconnectAttempts, 15000);
       reconnectAttempts++;
@@ -247,7 +289,11 @@
   els.navLeaderboard.addEventListener('click', () => setView('leaderboard'));
   els.btnRandom.addEventListener('click', () => sendMessage({ type: 'challenge_random' }));
   els.btnLeaveGame.addEventListener('click', () => {
-    if (currentGame) sendMessage({ type: 'leave_game', gameId: currentGame.gameId });
+    if (!currentGame) return;
+    sendMessage({ type: 'leave_game', gameId: currentGame.gameId });
+    currentGame = null;
+    stopCountdown();
+    setView('lobby');
   });
   els.btnBackToLobby.addEventListener('click', () => {
     closeResult();
@@ -262,6 +308,8 @@
     closeNameModal();
     connect();
   });
+
+  document.addEventListener('visibilitychange', sendVisibility);
 
   const existingName = localStorage.getItem(GUEST_NAME_KEY);
   if (existingName) {
