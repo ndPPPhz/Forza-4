@@ -14,5 +14,8 @@
     "better-sqlite3": "13.0.3",
     "express": "^5.2.1",
     "ws": "^8.21.3"
+  },
+  "allowScripts": {
+    "better-sqlite3@13.0.3": true
   }
 }
