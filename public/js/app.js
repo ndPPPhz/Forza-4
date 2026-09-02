@@ -8,6 +8,36 @@
   // l'highlight su tap/long press anche li.
   document.addEventListener('touchstart', function () {}, { passive: true });
 
+  // :active in CSS resta legato all'elemento dove il tocco e' iniziato e non
+  // segue il dito durante lo scorrimento. Per far "scorrere" l'highlight da
+  // una riga all'altra mentre si scorre con il dito, si traccia a mano quale
+  // riga si trova sotto il punto di tocco ad ogni touchmove.
+  function enableTouchScrubHighlight(container, rowSelector, highlightClass) {
+    let activeRow = null;
+    function setActive(row) {
+      if (row === activeRow) return;
+      if (activeRow) activeRow.classList.remove(highlightClass);
+      activeRow = row;
+      if (activeRow) activeRow.classList.add(highlightClass);
+    }
+    function rowAtPoint(x, y) {
+      const el = document.elementFromPoint(x, y);
+      const row = el ? el.closest(rowSelector) : null;
+      return row && container.contains(row) ? row : null;
+    }
+    container.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      if (t) setActive(rowAtPoint(t.clientX, t.clientY));
+    }, { passive: true });
+    container.addEventListener('touchmove', (e) => {
+      const t = e.touches[0];
+      if (t) setActive(rowAtPoint(t.clientX, t.clientY));
+    }, { passive: true });
+    const clear = () => setActive(null);
+    container.addEventListener('touchend', clear, { passive: true });
+    container.addEventListener('touchcancel', clear, { passive: true });
+  }
+
   const GUEST_ID_KEY = 'f4_guest_id';
   const GUEST_NAME_KEY = 'f4_guest_name';
   const ROWS = 6;
@@ -291,6 +321,9 @@
       ws.close();
     });
   }
+
+  enableTouchScrubHighlight(els.lobbyList, 'li', 'row-touch-active');
+  enableTouchScrubHighlight(els.leaderboardBody, 'tr', 'row-touch-active');
 
   els.navLobby.addEventListener('click', () => setView(currentGame ? 'game' : 'lobby'));
   els.navLeaderboard.addEventListener('click', () => setView('leaderboard'));

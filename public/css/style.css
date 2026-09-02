@@ -155,7 +155,8 @@ h1, h2 {
 }
 
 .player-list li:hover,
-.player-list li:active {
+.player-list li:active,
+.player-list li.row-touch-active {
   background-color: rgba(138, 162, 196, 0.16);
 }
 
@@ -269,7 +270,8 @@ h1, h2 {
 }
 
 .leaderboard-table tbody tr:hover,
-.leaderboard-table tbody tr:active {
+.leaderboard-table tbody tr:active,
+.leaderboard-table tbody tr.row-touch-active {
   background-color: rgba(138, 162, 196, 0.16);
 }
 
