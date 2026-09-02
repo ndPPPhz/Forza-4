@@ -1,6 +1,13 @@
 (function () {
   'use strict';
 
+  // Su iOS Safari lo stato :active non scatta su elementi senza un proprio
+  // listener di tocco (le righe della lista/tabella non ne hanno, solo i
+  // bottoni al loro interno): un listener "vuoto" a livello di documento fa
+  // si che Safari tracci comunque lo stato attivo ovunque, abilitando cosi
+  // l'highlight su tap/long press anche li.
+  document.addEventListener('touchstart', function () {}, { passive: true });
+
   const GUEST_ID_KEY = 'f4_guest_id';
   const GUEST_NAME_KEY = 'f4_guest_name';
   const ROWS = 6;
