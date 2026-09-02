@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Forza 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <h1>Forza 4</h1>
+    <nav class="topnav">
+      <button id="nav-lobby" class="nav-btn is-active" type="button">
+        <span class="icon" aria-hidden="true">🕹️</span><span>Sala d'attesa</span>
+      </button>
+      <button id="nav-leaderboard" class="nav-btn" type="button">
+        <span class="icon" aria-hidden="true">🏆</span><span>Classifica</span>
+      </button>
+    </nav>
+  </header>
+
+  <div id="connection-banner" class="banner" hidden></div>
+
+  <main>
+
+    <section id="view-lobby" class="view">
+      <p class="hint">Scegli un avversario dalla lista, oppure lascia decidere la sorte.</p>
+      <button id="btn-random" class="btn btn-primary btn-block" type="button">
+        <span class="icon" aria-hidden="true">🎲</span><span>Sfida a caso</span>
+      </button>
+      <ul id="lobby-list" class="player-list"></ul>
+      <p id="lobby-empty" class="hint" hidden>Nessun altro giocatore in sala al momento. Aspetta che qualcuno arrivi!</p>
+    </section>
+
+    <section id="view-game" class="view" hidden>
+      <div class="game-header">
+        <span id="game-opponent" class="opponent-name"></span>
+        <span id="game-turn" class="turn-indicator"></span>
+      </div>
+      <div id="board" class="board" role="grid" aria-label="Tabellone di Forza 4"></div>
+      <button id="btn-leave-game" class="btn btn-ghost" type="button">
+        <span class="icon" aria-hidden="true">🚪</span><span>Abbandona la partita</span>
+      </button>
+    </section>
+
+    <section id="view-leaderboard" class="view" hidden>
+      <p class="hint">Le vittorie contano piu delle partite giocate.</p>
+      <table class="leaderboard-table">
+        <thead>
+          <tr><th>#</th><th>Nome</th><th>Vittorie</th><th>Sconfitte</th><th>Pareggi</th></tr>
+        </thead>
+        <tbody id="leaderboard-body"></tbody>
+      </table>
+      <p id="leaderboard-empty" class="hint" hidden>Ancora nessuna partita giocata.</p>
+    </section>
+
+  </main>
+
+  <div id="name-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <h2>Come ti chiami?</h2>
+      <p class="hint">Il tuo nome verra visto dagli altri giocatori nella sala d'attesa.</p>
+      <form id="name-form">
+        <input id="name-input" type="text" maxlength="30" placeholder="Il tuo nome" autocomplete="off" required>
+        <button type="submit" class="btn btn-primary btn-block">
+          <span class="icon" aria-hidden="true">✅</span><span>Entra in sala</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="result-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <h2 id="result-title"></h2>
+      <button id="btn-back-to-lobby" class="btn btn-primary btn-block" type="button">
+        <span class="icon" aria-hidden="true">↩️</span><span>Torna alla sala d'attesa</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+<script src="/js/app.js"></script>
+</body>
+</html>
