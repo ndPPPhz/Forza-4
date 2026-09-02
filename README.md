@@ -98,11 +98,21 @@ La cartella `data/` (database SQLite) e' nel `.gitignore` e non viene mai
 toccata da `git pull`, quindi classifica e cronologia partite restano al
 sicuro tra un aggiornamento e l'altro.
 
-**Nota su better-sqlite3**: e' pinnato alla versione esatta `13.0.3` per
-compatibilita' con installazioni Node recenti che bloccano gli script di
-build nativi in fase di `npm install` a meno che non siano esplicitamente
-consentiti — stesso accorgimento gia' adottato in altri progetti dello
-stesso setup.
+**Nota su better-sqlite3**: e' pinnato alla versione esatta `13.0.3`. Da
+npm 12 in poi gli script di installazione nativi (`postinstall`, qui
+`node-gyp rebuild`) sono disattivati di default per tutte le dipendenze e
+vanno autorizzati esplicitamente: `package.json` include gia' il campo
+`allowScripts` che autorizza `better-sqlite3@13.0.3`, quindi un normale
+`npm install` dovrebbe funzionare senza intervento. Se npm segnala
+comunque `install scripts blocked` (es. dopo un aggiornamento della
+dipendenza a una versione diversa non ancora autorizzata), autorizzala con:
+
+```bash
+npm install-scripts approve better-sqlite3
+```
+
+e ricorda di committare il `package.json` aggiornato, altrimenti il
+prossimo `git pull` + `npm install` sul server si blocchera' di nuovo.
 
 ## Protocollo WebSocket (riassunto)
 
