@@ -103,7 +103,7 @@ class Lobby {
     const from = this.clients.get(fromConnId);
     const target = this.clients.get(targetConnId);
     if (!from || !target || from.status !== 'lobby' || target.status !== 'lobby') {
-      return [{ connId: fromConnId, message: { type: 'error', message: 'Quel giocatore non e piu disponibile.' } }];
+      return [{ connId: fromConnId, message: { type: 'error', message: 'Quel giocatore non è più disponibile.' } }];
     }
     return this._startGame(fromConnId, targetConnId);
   }
@@ -125,7 +125,7 @@ class Lobby {
     }
     const myColor = game.players[1] === connId ? 1 : 2;
     if (game.turn !== myColor) {
-      return [{ connId, message: { type: 'error', message: 'Non e il tuo turno.' } }];
+      return [{ connId, message: { type: 'error', message: 'Non è il tuo turno.' } }];
     }
 
     const placed = dropDisc(game.board, col, myColor);
