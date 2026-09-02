@@ -16,7 +16,7 @@ class Lobby {
     this.dispatch = dispatch;
     // connId -> { guestId, name, status: 'lobby' | 'game', gameId, visible }
     this.clients = new Map();
-    // gameId -> { id, board, turn, turnDeadline, turnTimer, players: {1: connId, 2: connId}, guestIds: {1,2}, names: {1,2}, startedAt }
+    // gameId -> { id, board, turn, turnTimer, players: {1: connId, 2: connId}, guestIds: {1,2}, names: {1,2}, startedAt }
     this.games = new Map();
   }
 
@@ -75,7 +75,6 @@ class Lobby {
 
   _scheduleTurnTimer(game) {
     this._clearTurnTimer(game);
-    game.turnDeadline = Date.now() + TURN_TIMEOUT_MS;
     game.turnTimer = setTimeout(() => this._handleTurnTimeout(game.id), TURN_TIMEOUT_MS);
   }
 
@@ -106,7 +105,6 @@ class Lobby {
       id: gameId,
       board: createBoard(),
       turn: 1,
-      turnDeadline: null,
       turnTimer: null,
       players: { 1: connIdA, 2: connIdB },
       guestIds: { 1: clientA.guestId, 2: clientB.guestId },
@@ -124,11 +122,11 @@ class Lobby {
     const out = [];
     out.push({
       connId: connIdA,
-      message: { type: 'game_start', gameId, board: game.board, yourColor: 1, turn: game.turn, turnDeadline: game.turnDeadline, opponent: { name: clientB.name } },
+      message: { type: 'game_start', gameId, board: game.board, yourColor: 1, turn: game.turn, turnTimeoutMs: TURN_TIMEOUT_MS, opponent: { name: clientB.name } },
     });
     out.push({
       connId: connIdB,
-      message: { type: 'game_start', gameId, board: game.board, yourColor: 2, turn: game.turn, turnDeadline: game.turnDeadline, opponent: { name: clientA.name } },
+      message: { type: 'game_start', gameId, board: game.board, yourColor: 2, turn: game.turn, turnTimeoutMs: TURN_TIMEOUT_MS, opponent: { name: clientA.name } },
     });
     this.dispatch(out);
     this.dispatch(this.broadcastLobbyMessages());
@@ -183,8 +181,6 @@ class Lobby {
     if (!finished) {
       game.turn = myColor === 1 ? 2 : 1;
       this._scheduleTurnTimer(game);
-    } else {
-      game.turnDeadline = null;
     }
 
     const out = [];
@@ -197,7 +193,7 @@ class Lobby {
           board: game.board,
           lastMove: placed,
           turn: game.turn,
-          turnDeadline: game.turnDeadline,
+          turnTimeoutMs: finished ? null : TURN_TIMEOUT_MS,
           finished,
           result: won ? (myColor === color ? 'win' : 'loss') : full ? 'draw' : null,
         },
@@ -229,13 +225,13 @@ class Lobby {
     if (this.clients.has(winningConnId)) {
       out.push({
         connId: winningConnId,
-        message: { type: 'game_update', gameId, board: game.board, lastMove: null, turn: game.turn, turnDeadline: null, finished: true, result: winnerResult },
+        message: { type: 'game_update', gameId, board: game.board, lastMove: null, turn: game.turn, turnTimeoutMs: null, finished: true, result: winnerResult },
       });
     }
     if (notifyLeaver && this.clients.has(leavingConnId)) {
       out.push({
         connId: leavingConnId,
-        message: { type: 'game_update', gameId, board: game.board, lastMove: null, turn: game.turn, turnDeadline: null, finished: true, result: leaverResult },
+        message: { type: 'game_update', gameId, board: game.board, lastMove: null, turn: game.turn, turnTimeoutMs: null, finished: true, result: leaverResult },
       });
     }
     this.dispatch(out);

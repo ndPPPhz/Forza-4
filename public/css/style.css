@@ -9,6 +9,8 @@
   --disc-p1: #e07a63;
   --disc-p2: #8aa2c4;
   --danger: #e0a95f;
+  --turn-mine: #5fbf82;
+  --turn-opponent: #e0645a;
 }
 
 * {
@@ -192,6 +194,8 @@ h1, h2 {
 
 .opponent-name { font-weight: 600; }
 .turn-indicator { color: var(--accent-dark); font-weight: 600; }
+.turn-indicator.is-mine { color: var(--turn-mine); }
+.turn-indicator.is-opponent { color: var(--turn-opponent); }
 
 .turn-timer {
   font-variant-numeric: tabular-nums;
