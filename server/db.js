@@ -83,10 +83,10 @@ function recordGame(game) {
 }
 
 const leaderboardStmt = db.prepare(`
-  SELECT name, wins, losses, draws, games_played
+  SELECT name, wins, losses, draws, games_played, (wins * 3 + draws) AS points
   FROM players
   WHERE games_played > 0
-  ORDER BY wins DESC, games_played ASC, name COLLATE NOCASE ASC
+  ORDER BY points DESC, wins DESC, games_played ASC, name COLLATE NOCASE ASC
   LIMIT 50
 `);
 

@@ -41,6 +41,7 @@
       <div class="game-header">
         <span id="game-opponent" class="opponent-name"></span>
         <span id="game-turn" class="turn-indicator"></span>
+        <span id="game-timer" class="turn-timer"></span>
       </div>
       <div id="board" class="board" role="grid" aria-label="Tabellone di Forza 4"></div>
       <button id="btn-leave-game" class="btn btn-ghost" type="button">
@@ -49,10 +50,10 @@
     </section>
 
     <section id="view-leaderboard" class="view" hidden>
-      <p class="hint">Le vittorie contano più delle partite giocate.</p>
+      <p class="hint">Come nel calcio: vittoria 3 punti, pareggio 1, sconfitta 0.</p>
       <table class="leaderboard-table">
         <thead>
-          <tr><th>#</th><th>Nome</th><th>Vittorie</th><th>Sconfitte</th><th>Pareggi</th></tr>
+          <tr><th>#</th><th>Nome</th><th>Pt</th><th>V</th><th>P</th><th>S</th></tr>
         </thead>
         <tbody id="leaderboard-body"></tbody>
       </table>
