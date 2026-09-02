@@ -71,7 +71,7 @@
 
   let ws = null;
   let reconnectAttempts = 0;
-  let currentGame = null; // { gameId, yourColor, opponentName, turn, turnDeadline }
+  let currentGame = null; // { gameId, yourColor, opponentName, turn, turnDeadline } (turnDeadline in unita' performance.now(), non Date.now())
   let countdownInterval = null;
 
   function getOrCreateGuestId() {
@@ -163,6 +163,8 @@
     if (!currentGame) return;
     const myTurn = currentGame.turn === currentGame.yourColor;
     els.gameTurn.textContent = myTurn ? 'Tocca a te' : 'Turno avversario';
+    els.gameTurn.classList.toggle('is-mine', myTurn);
+    els.gameTurn.classList.toggle('is-opponent', !myTurn);
     els.board.classList.toggle('is-locked', !myTurn);
   }
 
@@ -180,16 +182,22 @@
       stopCountdown();
       return;
     }
-    const remainingMs = currentGame.turnDeadline - Date.now();
+    const remainingMs = currentGame.turnDeadline - performance.now();
     const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
     els.gameTimer.textContent = remainingSec + 's';
     els.gameTimer.classList.toggle('is-low', remainingMs <= LOW_TIME_THRESHOLD_MS);
   }
 
-  function startCountdown(deadline) {
+  // durationMs e' la durata del turno mandata dal server (non un istante
+  // assoluto): la scadenza si calcola sull'orologio del browser stesso
+  // (performance.now(), monotono), cosi' il countdown mostrato resta
+  // corretto anche se l'orologio di sistema del server e' sfasato rispetto
+  // a quello del client (il timeout vero e proprio, lato server, non
+  // dipende comunque da Date.now() ma solo dal tempo trascorso).
+  function startCountdown(durationMs) {
     stopCountdown();
-    if (!currentGame || !deadline) return;
-    currentGame.turnDeadline = deadline;
+    if (!currentGame || !durationMs) return;
+    currentGame.turnDeadline = performance.now() + durationMs;
     tickCountdown();
     countdownInterval = setInterval(tickCountdown, 250);
   }
@@ -242,6 +250,14 @@
 
   function sendVisibility() {
     sendMessage({ type: 'visibility', visible: document.visibilityState === 'visible' });
+    // Il browser mette in pausa/rallenta i setInterval quando il tab non e
+    // in primo piano: al ritorno, il countdown potrebbe mostrare ancora il
+    // valore di quando era stato messo in pausa finche' non scatta il tick
+    // successivo. Forziamo subito un ricalcolo cosi' il numero e' sempre
+    // corretto appena si torna sulla pagina.
+    if (document.visibilityState === 'visible') {
+      tickCountdown();
+    }
   }
 
   function handleServerMessage(data) {
@@ -255,7 +271,7 @@
         buildBoard();
         renderBoard(data.board);
         updateTurnIndicator();
-        startCountdown(data.turnDeadline);
+        startCountdown(data.turnTimeoutMs);
         setView('game');
         break;
       case 'game_update':
@@ -276,7 +292,7 @@
           showResult(messages[data.result] || 'Partita conclusa.');
           currentGame = null;
         } else {
-          startCountdown(data.turnDeadline);
+          startCountdown(data.turnTimeoutMs);
         }
         break;
       case 'error':
