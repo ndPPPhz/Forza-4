@@ -1,0 +1,16 @@
+[Unit]
+Description=Forza 4 - mini-gioco multiplayer
+After=network.target
+
+[Service]
+Type=simple
+User=forza4
+Group=forza4
+WorkingDirectory=/opt/forza4
+EnvironmentFile=/opt/forza4/.env
+ExecStart=/usr/bin/node server/index.js
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
