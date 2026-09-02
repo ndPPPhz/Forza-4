@@ -32,7 +32,7 @@ stessa porta.
 |---|---|---|
 | `PORT` | Porta di ascolto del server | `3300` |
 | `DB_PATH` | Percorso del database SQLite (partite + classifica) | `./data/forza4.db` |
-| `TURN_TIMEOUT_MS` | Tempo massimo (in ms) per fare una mossa prima di perdere la partita a tavolino | `30000` |
+| `TURN_TIMEOUT_MS` | Tempo massimo (in ms) per fare una mossa prima di perdere la partita a tavolino | `60000` |
 
 ## Deploy su Arch Linux (systemd)
 

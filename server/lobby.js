@@ -3,7 +3,7 @@ const { createBoard, dropDisc, checkWin, isBoardFull } = require('./game');
 const { recordGame } = require('./db');
 
 const MAX_NAME_LEN = 30;
-const TURN_TIMEOUT_MS = Number(process.env.TURN_TIMEOUT_MS) || 30000;
+const TURN_TIMEOUT_MS = Number(process.env.TURN_TIMEOUT_MS) || 60000;
 
 function sanitizeName(rawName) {
   const name = String(rawName || '').trim().slice(0, MAX_NAME_LEN);
