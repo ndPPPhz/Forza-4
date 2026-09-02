@@ -148,6 +148,12 @@ h1, h2 {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
+  transition: background-color 120ms ease;
+}
+
+.player-list li:hover,
+.player-list li:active {
+  background-color: rgba(138, 162, 196, 0.16);
 }
 
 .player-list .player-name {
@@ -253,6 +259,15 @@ h1, h2 {
   text-align: left;
   border-bottom: 1px solid var(--border);
   font-size: 0.9rem;
+}
+
+.leaderboard-table tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.leaderboard-table tbody tr:hover,
+.leaderboard-table tbody tr:active {
+  background-color: rgba(138, 162, 196, 0.16);
 }
 
 .leaderboard-table th {
