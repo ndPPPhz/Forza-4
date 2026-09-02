@@ -19,8 +19,8 @@ npm start
 ```
 
 Apri `http://localhost:3300`. Per provare una partita servono due
-identita' diverse: apri due browser diversi (o uno normale + uno in
-incognito), dato che l'identita' del giocatore e' salvata in
+identità diverse: apri due browser diversi (o uno normale + uno in
+incognito), dato che l'identità del giocatore è salvata in
 `localStorage` per browser.
 
 Il server serve sia le pagine statiche che il WebSocket (`/ws`) sulla
@@ -41,8 +41,8 @@ Installa Node.js e gli strumenti di build:
 sudo pacman -S --needed nodejs npm git base-devel python
 ```
 
-`base-devel` e `python` servono perche' `better-sqlite3` e' un modulo
-nativo: se il binario precompilato scaricato da npm non e' compatibile
+`base-devel` e `python` servono perché `better-sqlite3` è un modulo
+nativo: se il binario precompilato scaricato da npm non è compatibile
 con il tuo sistema, questi strumenti permettono di ricompilarlo in
 locale.
 
@@ -59,7 +59,7 @@ sudo mkdir -p data
 sudo chown -R forza4:forza4 /opt/forza4
 ```
 
-Se il repository e' privato, clonalo via SSH invece che via HTTPS: genera
+Se il repository è privato, clonalo via SSH invece che via HTTPS: genera
 una chiave sul server (`sudo -u forza4 ssh-keygen -t ed25519`),
 aggiungila su GitHub in *Settings → SSH and GPG keys*, e usa
 `git@github.com:ndPPPhz/Forza-4.git` come URL.
@@ -75,7 +75,7 @@ sudo systemctl status forza4
 
 Il server ora ascolta su `http://127.0.0.1:3300` (solo in locale). Per
 esporlo su internet con dominio/HTTPS, usa nginx come reverse proxy —
-vedi `deploy/nginx.conf.example` per un esempio (include gia' gli header
+vedi `deploy/nginx.conf.example` per un esempio (include già gli header
 necessari per l'upgrade WebSocket su `/ws`), poi:
 
 ```bash
@@ -94,14 +94,14 @@ sudo -u forza4 npm install --omit=dev   # solo se sono cambiate le dipendenze
 sudo systemctl restart forza4
 ```
 
-La cartella `data/` (database SQLite) e' nel `.gitignore` e non viene mai
+La cartella `data/` (database SQLite) è nel `.gitignore` e non viene mai
 toccata da `git pull`, quindi classifica e cronologia partite restano al
 sicuro tra un aggiornamento e l'altro.
 
-**Nota su better-sqlite3**: e' pinnato alla versione esatta `13.0.3`. Da
+**Nota su better-sqlite3**: è pinnato alla versione esatta `13.0.3`. Da
 npm 12 in poi gli script di installazione nativi (`postinstall`, qui
 `node-gyp rebuild`) sono disattivati di default per tutte le dipendenze e
-vanno autorizzati esplicitamente: `package.json` include gia' il campo
+vanno autorizzati esplicitamente: `package.json` include già il campo
 `allowScripts` che autorizza `better-sqlite3@13.0.3`, quindi un normale
 `npm install` dovrebbe funzionare senza intervento. Se npm segnala
 comunque `install scripts blocked` (es. dopo un aggiornamento della
@@ -112,7 +112,7 @@ npm install-scripts approve better-sqlite3
 ```
 
 e ricorda di committare il `package.json` aggiornato, altrimenti il
-prossimo `git pull` + `npm install` sul server si blocchera' di nuovo.
+prossimo `git pull` + `npm install` sul server si bloccherà di nuovo.
 
 ## Protocollo WebSocket (riassunto)
 
@@ -121,6 +121,6 @@ Client -> server: `hello`, `rename`, `challenge`, `challenge_random`,
 
 Server -> client: `lobby`, `game_start`, `game_update`, `error`.
 
-L'identita' del giocatore e' un `guestId` casuale generato dal browser e
+L'identità del giocatore è un `guestId` casuale generato dal browser e
 salvato in `localStorage`, mai esposto agli altri client (la lista in sala
 d'attesa usa un id di connessione effimero, non il `guestId`).

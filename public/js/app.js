@@ -102,7 +102,7 @@
         colEl.appendChild(cell);
       }
       colEl.addEventListener('click', () => {
-        if (!currentGame) return;
+        if (!currentGame || currentGame.turn !== currentGame.yourColor) return;
         sendMessage({ type: 'move', gameId: currentGame.gameId, col });
       });
       els.board.appendChild(colEl);
@@ -121,7 +121,9 @@
 
   function updateTurnIndicator() {
     if (!currentGame) return;
-    els.gameTurn.textContent = currentGame.turn === currentGame.yourColor ? 'Tocca a te' : 'Turno avversario';
+    const myTurn = currentGame.turn === currentGame.yourColor;
+    els.gameTurn.textContent = myTurn ? 'Tocca a te' : 'Turno avversario';
+    els.board.classList.toggle('is-locked', !myTurn);
   }
 
   function openNameModal() {
