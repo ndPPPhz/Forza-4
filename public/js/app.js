@@ -288,6 +288,7 @@
             forfeit_win: "L'avversario ha abbandonato: hai vinto!",
             timeout_win: "L'avversario non ha giocato in tempo: hai vinto!",
             timeout_loss: 'Tempo scaduto: hai perso la partita.',
+            void: 'Partita annullata: uno dei due non ha fatto nessuna mossa.',
           };
           showResult(messages[data.result] || 'Partita conclusa.');
           currentGame = null;

@@ -106,6 +106,7 @@ class Lobby {
       board: createBoard(),
       turn: 1,
       turnTimer: null,
+      moveCounts: { 1: 0, 2: 0 },
       players: { 1: connIdA, 2: connIdB },
       guestIds: { 1: clientA.guestId, 2: clientB.guestId },
       names: { 1: clientA.name, 2: clientB.name },
@@ -173,6 +174,7 @@ class Lobby {
     }
 
     this._clearTurnTimer(game);
+    game.moveCounts[myColor]++;
 
     const won = checkWin(game.board, placed.row, placed.col, myColor);
     const full = !won && isBoardFull(game.board);
@@ -221,6 +223,27 @@ class Lobby {
     const winningColor = leavingColor === 1 ? 2 : 1;
     const winningConnId = game.players[winningColor];
 
+    // Se uno dei due non ha fatto nemmeno una mossa in questa partita, non
+    // e' stata una vera sfida: si annulla invece di assegnare una vittoria
+    // a tavolino (es. A sfida di nuovo B dopo una partita, B non si presenta
+    // e non muove mai, il timer scade: nessuno dei due deve vincere/perdere
+    // per una partita mai davvero iniziata).
+    if (game.moveCounts[1] === 0 || game.moveCounts[2] === 0) {
+      const out = [];
+      for (const color of [1, 2]) {
+        const connId = game.players[color];
+        if (this.clients.has(connId)) {
+          out.push({
+            connId,
+            message: { type: 'game_update', gameId, board: game.board, lastMove: null, turn: game.turn, turnTimeoutMs: null, finished: true, result: 'void' },
+          });
+        }
+      }
+      this.dispatch(out);
+      this._finishGame(game, null, 'void');
+      return;
+    }
+
     const out = [];
     if (this.clients.has(winningConnId)) {
       out.push({
@@ -242,20 +265,22 @@ class Lobby {
   _finishGame(game, winningColor, status) {
     this._clearTurnTimer(game);
 
-    const winnerGuestId = winningColor ? game.guestIds[winningColor] : null;
-    try {
-      recordGame({
-        id: game.id,
-        player1GuestId: game.guestIds[1],
-        player1Name: game.names[1],
-        player2GuestId: game.guestIds[2],
-        player2Name: game.names[2],
-        winnerGuestId,
-        status,
-        startedAt: game.startedAt,
-      });
-    } catch (err) {
-      console.error('Errore salvataggio partita', err);
+    if (status !== 'void') {
+      const winnerGuestId = winningColor ? game.guestIds[winningColor] : null;
+      try {
+        recordGame({
+          id: game.id,
+          player1GuestId: game.guestIds[1],
+          player1Name: game.names[1],
+          player2GuestId: game.guestIds[2],
+          player2Name: game.names[2],
+          winnerGuestId,
+          status,
+          startedAt: game.startedAt,
+        });
+      } catch (err) {
+        console.error('Errore salvataggio partita', err);
+      }
     }
 
     this.games.delete(game.id);
